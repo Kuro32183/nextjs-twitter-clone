@@ -1,0 +1,174 @@
+type Comment {
+  created_at: DateTime
+  id: ID!
+  image: String
+  text: String
+  tweet: Tweet
+    @materializer(
+      query: "getTweet"
+      arguments: [{ name: "id", field: "tweet_id" }]
+    )
+  tweet_id: ID
+  username: String
+}
+
+type Tweet {
+  commentList: [Comment] @materializer(query: "getCommentUsingTweet_id")
+  created_at: DateTime
+  id: ID!
+  image: String
+  text: String
+  username: String
+  voteList: [Vote] @materializer(query: "getVoteUsingTweet_id")
+}
+
+type Vote {
+  created_at: DateTime
+  id: ID!
+  tweet: Tweet
+    @materializer(
+      query: "getTweet"
+      arguments: [{ name: "id", field: "tweet_id" }]
+    )
+  tweet_id: ID
+  upvote: Boolean
+  username: String
+}
+
+"""
+These are some examples of queries generated from the schema. Feel free to modify them or add your own.
+"""
+type Query {
+  getCommentList: [Comment]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "comment"
+      configuration: "postgresql_config"
+    )
+  getComment(id: ID!): Comment
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "comment"
+      configuration: "postgresql_config"
+    )
+  getTweetList: [Tweet]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select *, "tweet".id as id from "tweet"
+      order by "tweet"."created_at" desc
+      """
+      configuration: "postgresql_config"
+    )
+  getTweet(id: ID!): Tweet
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "tweet"
+      configuration: "postgresql_config"
+    )
+  getCommentUsingTweet_id(id: ID!): [Comment]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      SELECT T."created_at", T."id", T."image", T."text", T."tweet_id", T."username"
+        FROM "public"."comment" T
+        WHERE T."tweet_id" = $1
+        order by "created_at" desc
+      """
+      configuration: "postgresql_config"
+    )
+  getVoteUsingTweet_id(id: ID!): [Vote]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      SELECT T."created_at", T."id", T."tweet_id", T."upvote", T."username"
+        FROM "public"."vote" T
+        WHERE T."tweet_id" = $1
+      """
+      configuration: "postgresql_config"
+    )
+  getVoteList: [Vote]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "vote"
+      configuration: "postgresql_config"
+    )
+  getVote(id: ID!): Vote
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "vote"
+      configuration: "postgresql_config"
+    )
+}
+
+"""
+These are some examples of mutations generated from the schema. Feel free to modify them or add your own.
+"""
+type Mutation {
+  insertComment(
+    image: String!
+    text: String!
+    tweet_id: ID!
+    username: String!
+  ): Comment
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "comment"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+  deleteComment(id: ID!): Comment
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "comment"
+      dml: DELETE
+      configuration: "postgresql_config"
+    )
+  insertTweet(
+    image: String!
+    text: String!
+    username: String!
+  ): Tweet
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "tweet"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+  deleteTweet(id: ID!): Tweet
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "tweet"
+      dml: DELETE
+      configuration: "postgresql_config"
+    )
+  insertVote(
+    upvote: Boolean!
+    tweet_id: ID!
+    username: String!
+  ): Vote
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "vote"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+  deleteVote(id: ID!): Vote
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "vote"
+      dml: DELETE
+      configuration: "postgresql_config"
+    )
+}
