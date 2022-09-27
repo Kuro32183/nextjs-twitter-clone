@@ -3,7 +3,7 @@ import TwitterProvider from "next-auth/providers/twitter";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 
-const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = process.env;
+const { NEXT_PUBLIC_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = process.env;
 
 export default NextAuth({
  // Configure one or more authentication providers
@@ -18,6 +18,7 @@ export default NextAuth({
   })
    // ...add more providers here
  ],
+ secret: NEXT_PUBLIC_SECRET as string,
 }
 
 );
